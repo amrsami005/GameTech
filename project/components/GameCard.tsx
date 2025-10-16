@@ -9,14 +9,14 @@ interface GameCardProps {
 export default function GameCard({ game }: GameCardProps) {
   return (
     <Link href={`/game/${game.id}`} className="block group">
-      <div className="bg-[#2a2a2a] rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-600/20 relative">
+      <div className="bg-[#2a2a2a] rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-red-600/30 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none">
         {game.badge && (
-          <span className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold z-10">
+          <span className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-bold z-10 shadow-lg">
             {game.badge}
           </span>
         )}
 
-        <div className="relative h-36 overflow-hidden">
+        <div className="relative h-32 overflow-hidden">
           <Image
             src={game.image}
             alt={game.title}
@@ -25,15 +25,11 @@ export default function GameCard({ game }: GameCardProps) {
           />
         </div>
 
-        <div className="p-4">
-          <h3 className="font-bold text-white mb-1 truncate group-hover:text-red-600 transition-colors">
+        <div className="p-3">
+          <h3 className="font-bold text-white mb-1 text-sm truncate">
             {game.title}
           </h3>
-          <p className="text-gray-400 text-sm">{game.size}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-yellow-500 text-sm">★ {game.rating}</span>
-            <span className="text-gray-500 text-xs">• {game.release_year}</span>
-          </div>
+          <p className="text-gray-400 text-xs">{game.size}</p>
         </div>
       </div>
     </Link>
