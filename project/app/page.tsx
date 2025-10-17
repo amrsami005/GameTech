@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import GameCard from '@/components/GameCard';
 import { gamesLibrary } from '@/lib/gamesData';
@@ -8,90 +8,151 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [trendingGames, setTrendingGames] = useState(gamesLibrary.slice(0, 8));
-  const [recommendedGames, setRecommendedGames] = useState(gamesLibrary.slice(8, 16));
-  const [mostDownloadedGames, setMostDownloadedGames] = useState(gamesLibrary.slice(16, 24));
+  const [trendingGames] = useState(gamesLibrary.slice(0, 8));
+  const [recommendedGames] = useState(gamesLibrary.slice(8, 16));
+  const [mostDownloadedGames] = useState(gamesLibrary.slice(16, 24));
 
-  const heroImages = [
-    'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&q=80',
-    'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1920&q=80',
-    'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1920&q=80',
-    'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1920&q=80',
-  ];
+  // Get top 5 featured games for hero
+  const featuredGames = gamesLibrary.slice(0, 5);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+      setCurrentSlide((prev) => (prev + 1) % featuredGames.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [heroImages.length]);
+  }, [featuredGames.length]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    setCurrentSlide((prev) => (prev + 1) % featuredGames.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
-  };
-
-  const loadMore = (section: string) => {
-    if (section === 'trending') {
-      setTrendingGames(prev => [...prev, ...gamesLibrary.slice(prev.length, prev.length + 6)]);
-    } else if (section === 'recommended') {
-      setRecommendedGames(prev => [...prev, ...gamesLibrary.slice(8 + prev.length - 8, 8 + prev.length - 8 + 6)]);
-    } else if (section === 'downloaded') {
-      setMostDownloadedGames(prev => [...prev, ...gamesLibrary.slice(16 + prev.length - 8, 16 + prev.length - 8 + 6)]);
-    }
+    setCurrentSlide((prev) => (prev - 1 + featuredGames.length) % featuredGames.length);
   };
 
   return (
     <div className="min-h-screen bg-[#1c1c1c]">
-      <section className="relative h-[350px] md:h-[500px] overflow-hidden">
-        <div className="relative w-full h-full">
-          {heroImages.map((img, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{
-                backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+      {/* Hero Section */}
+<section className="relative w-full h-[600px] md:h-[700px] bg-gray-900 overflow-hidden">
+  {/* Background Images */}
+  {featuredGames.map((game, index) => (
+    <div
+      key={game.id}
+      className={`absolute inset-0 transition-opacity duration-1000 ${
+        index === currentSlide ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(28,28,28,0.95)), url(${game.image.startsWith('http') ? game.image : game.image.startsWith('/') ? game.image : `/assets/${game.image}`})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    />
+  ))}
+
+  {/* Content Container */}
+  <div className="relative h-full flex flex-col justify-end pb-12 md:pb-20 px-4 md:px-12 z-10">
+    {/* Main Featured Game */}
+    <div className="mb-6 md:mb-8 max-w-2xl">
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
+        {featuredGames[currentSlide].title}
+      </h1>
+      <p className="text-lg md:text-xl text-gray-200 mb-6 drop-shadow-lg">
+        {featuredGames[currentSlide].description}
+      </p>
+      <Link
+        href={`/game/${featuredGames[currentSlide].id}`}
+        className="bg-red-600 hover:bg-red-700 text-white px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg transition-all hover:scale-105 shadow-2xl inline-block"
+      >
+        View Game
+      </Link>
+    </div>
+
+    {/* Thumbnail Navigation */}
+    <div className="flex items-center gap-3 md:gap-4 max-w-6xl select-none">
+      <button
+        onClick={prevSlide}
+        className="bg-black/50 hover:bg-black/70 p-2 md:p-3 rounded-full transition-all z-20"
+      >
+        <ChevronLeft size={20} className="text-white md:w-6 md:h-6" />
+      </button>
+
+      {/* Scrollable Thumbnails — scrollbar completely hidden */}
+      <div
+        className="flex gap-3 md:gap-4 flex-1 overflow-x-auto"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+        onWheel={(e) => {
+          e.currentTarget.scrollLeft += e.deltaY;
+          e.preventDefault();
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
+        {featuredGames.map((game, index) => (
+          <button
+            key={game.id}
+            onClick={() => setCurrentSlide(index)}
+            className={`relative flex-shrink-0 w-36 h-20 md:w-48 md:h-28 rounded-lg overflow-hidden transition-all ${
+              index === currentSlide
+                ? 'ring-4 ring-red-600 scale-105'
+                : 'opacity-60 hover:opacity-100'
+            }`}
+          >
+            <img
+              src={game.image}
+              alt={game.title}
+              className="w-full h-full object-cover"
             />
-          ))}
-
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all z-10"
-          >
-            <ChevronLeft size={24} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 md:p-3">
+              <span className="text-white text-xs md:text-sm font-semibold truncate">
+                {game.title}
+              </span>
+            </div>
           </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all z-10"
-          >
-            <ChevronRight size={24} />
-          </button>
+        ))}
+      </div>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {heroImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide ? 'bg-red-600 w-8' : 'bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+      <button
+        onClick={nextSlide}
+        className="bg-black/50 hover:bg-black/70 p-2 md:p-3 rounded-full transition-all z-20"
+      >
+        <ChevronRight size={20} className="text-white md:w-6 md:h-6" />
+      </button>
+    </div>
 
+    {/* Progress Indicators */}
+    <div className="flex gap-2 mt-4 md:mt-6 justify-center md:justify-start">
+      {featuredGames.map((_, index) => (
+        <button
+          key={index}
+          onClick={() => setCurrentSlide(index)}
+          className={`h-1 rounded-full transition-all ${
+            index === currentSlide ? 'bg-red-600 w-12' : 'bg-white/30 w-8'
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+
+  {/* Gradient Overlay Bottom */}
+  <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1c1c1c] to-transparent pointer-events-none" />
+</section>
+
+
+      {/*
+      
+      ---
+      
+      Trending Now Section */}
       <section className="py-8 px-4 max-w-[1400px] mx-auto">
         <h3 className="text-3xl font-bold mb-6 relative inline-block slide-in text-white">
-          Trending Now
+          Trending Now{' '}
           <span className="absolute -bottom-2 left-0 w-12 h-1 bg-red-600 rounded"></span>
         </h3>
         <div className="overflow-x-auto pb-4 scrollbar-custom">
@@ -104,18 +165,23 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center mt-6">
-          <button
-            onClick={() => loadMore('trending')}
-            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 pulse"
+          <Link
+            href="/games"
+            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 inline-block pulse"
           >
-            Load More
-          </button>
+            View All Games
+          </Link>
         </div>
       </section>
 
+      {/*
+      
+      ---
+      
+      Recommended For You Section */}
       <section className="py-8 px-4 max-w-[1400px] mx-auto">
         <h3 className="text-3xl font-bold mb-6 relative inline-block slide-in text-white">
-          Recommended For You
+          Recommended For You{' '}
           <span className="absolute -bottom-2 left-0 w-12 h-1 bg-red-600 rounded"></span>
         </h3>
         <div className="overflow-x-auto pb-4 scrollbar-custom">
@@ -128,18 +194,23 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center mt-6">
-          <button
-            onClick={() => loadMore('recommended')}
-            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 pulse"
+          <Link
+            href="/games"
+            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 inline-block pulse"
           >
-            Load More
-          </button>
+            View All Games
+          </Link>
         </div>
       </section>
 
+      {/*
+      
+      ---
+      
+      Most Downloaded Games Section */}
       <section className="py-8 px-4 max-w-[1400px] mx-auto">
         <h3 className="text-3xl font-bold mb-6 relative inline-block slide-in text-white">
-          Most Downloaded Games
+          Most Downloaded Games{' '}
           <span className="absolute -bottom-2 left-0 w-12 h-1 bg-red-600 rounded"></span>
         </h3>
         <div className="overflow-x-auto pb-4 scrollbar-custom">
@@ -152,30 +223,20 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center mt-6">
-          <button
-            onClick={() => loadMore('downloaded')}
-            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 pulse"
+          <Link
+            href="/games"
+            className="bg-[#ff2d20] hover:bg-[#ff1a1a] text-white px-6 py-3 rounded-full font-bold transition-all hover:shadow-lg hover:-translate-y-1 inline-block pulse"
           >
-            Load More
-          </button>
+            View All Games
+          </Link>
         </div>
       </section>
 
-      <div className="flex justify-center gap-3 my-8">
-        {[1, 2, 3, 4].map((page) => (
-          <button
-            key={page}
-            className={`w-10 h-10 rounded-full font-bold transition-all ${
-              page === 1
-                ? 'bg-red-600 text-white scale-110'
-                : 'bg-[#333] text-white hover:bg-red-600 hover:-translate-y-1'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
-
+      {/*
+      
+      ---
+      
+      CTA Section */}
       <section
         className="py-24 px-4 text-center my-12 fade-in"
         style={{
